@@ -52,15 +52,17 @@ def get_stock_price():
         response = requests.get(STOCK_API_URL)
         response.raise_for_status()  # Raise an exception for HTTP errors
         data = response.json()
+        if 'Global Quote' not in data:
+            raise KeyError("Global Quote not found in response")
         global_quote = data['Global Quote']
         price = float(global_quote['05. price'])
         price_change = float(global_quote['09. change'])
         stock_info = f"WMT: {price:.2f} ({price_change:+.2f})"
         return stock_info
-    except requests.RequestException as e:
-        # Handle request error
+    except (requests.RequestException, KeyError) as e:
+        # Handle request error or missing key error
         print(f"Error fetching stock data: {e}")
-        return "N/A"
+        return "Stock Quote..."
 
 # Function to display the date on the LCD
 def display_date(lcd):
