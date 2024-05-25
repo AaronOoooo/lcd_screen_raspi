@@ -4,6 +4,7 @@ import requests
 from datetime import datetime
 from time import sleep
 from dotenv import load_dotenv
+import random
 
 # Import the LCD driver module
 sys.path.append('./I2C_LCD_driver')
@@ -21,6 +22,24 @@ WMT_SYMBOL = "WMT"
 # Construct API URLs
 WEATHER_API_URL = f'http://api.openweathermap.org/data/2.5/weather?q={CITY}&appid={OPENWEATHERMAP_API_KEY}&units=imperial'
 STOCK_API_URL = f'https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol={WMT_SYMBOL}&apikey={ALPHA_VANTAGE_API_KEY}'
+
+# Array of 100 two-word positive messages
+positive_messages = [
+    "Stay Positive", "Be Kind", "Stay Strong", "Keep Smiling", "Be Happy", "Stay Awesome", "You Rock",
+    "Be Grateful", "Stay Humble", "Keep Going", "Shine Bright", "Be Brave", "Stay Focused", "Be Yourself",
+    "Stay True", "Be Inspired", "Dream Big", "Stay Calm", "Be Creative", "Stay Motivated", "Keep Growing",
+    "Stay Confident", "Be Resilient", "Keep Learning", "Stay Curious", "Be Adventurous", "Stay Determined",
+    "Be Generous", "Stay Healthy", "Be Mindful", "Stay Balanced", "Be Optimistic", "Stay Positive", "Keep Faith",
+    "Be Honest", "Stay Loyal", "Be Compassionate", "Stay Encouraged", "Be Patient", "Stay Driven", "Be Forgiving",
+    "Stay Courageous", "Be Supportive", "Stay Joyful", "Be Resourceful", "Stay Inspired", "Be Fearless", "Stay Grateful",
+    "Be Thoughtful", "Stay Vibrant", "Be Authentic", "Stay Kind", "Be Energetic", "Stay Persistent", "Be Flexible",
+    "Stay Focused", "Be Reliable", "Stay Peaceful", "Be Cheerful", "Stay Strong", "Be Loving", "Stay Proud", "Be Hopeful",
+    "Stay Enthusiastic", "Be Friendly", "Stay Trustworthy", "Be Devoted", "Stay Content", "Be Generous", "Stay Thankful",
+    "Be Selfless", "Stay Bright", "Be Positive", "Stay Passionate", "Be Humble", "Stay Blissful", "Be Charitable", "Stay Brave",
+    "Be Uplifting", "Stay Kindhearted", "Be Motivated", "Stay Warmhearted", "Be Sympathetic", "Stay Empathetic", "Be Forgiving",
+    "Stay Joyous", "Be Understanding", "Stay Lighthearted", "Be Supportive", "Stay Hopeful", "Be Proud", "Stay Faithful", "Be Confident",
+    "Stay Radiant", "Be Playful", "Stay Unique", "Be Talented"
+]
 
 # Function to initialize the LCD display
 def initialize_lcd():
@@ -62,7 +81,7 @@ def get_stock_price():
     except (requests.RequestException, KeyError) as e:
         # Handle request error or missing key error
         print(f"Error fetching stock data: {e}")
-        return "Stock Quote..."
+        return random.choice(positive_messages)
 
 # Function to display the date on the LCD
 def display_date(lcd):
