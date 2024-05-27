@@ -17,11 +17,16 @@ load_dotenv()
 OPENWEATHERMAP_API_KEY = os.getenv('OPENWEATHERMAP_API_KEY')
 ALPHA_VANTAGE_API_KEY = os.getenv('ALPHA_VANTAGE_API_KEY')
 CITY = os.getenv('CITY_NAME')
-WMT_SYMBOL = "WMT"
+
+# List of stock symbols
+STOCK_SYMBOLS = [
+    "AAPL", "ADP", "AMZN", "BDX", "BFAM", "EMBC", "GDDY", "GOOG", "GOOGL", "INTC", "K", "KLG", "META",
+    "NFLX", "PEP", "SJM", "SYK", "T", "TMUS", "V", "VTI", "WBD", "DIS", "UPS", "MSFT", "MCD", "SBUX", 
+    "ASH", "WMT"
+]
 
 # Construct API URLs
 WEATHER_API_URL = f'http://api.openweathermap.org/data/2.5/weather?q={CITY}&appid={OPENWEATHERMAP_API_KEY}&units=imperial'
-STOCK_API_URL = f'https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol={WMT_SYMBOL}&apikey={ALPHA_VANTAGE_API_KEY}'
 
 # Array of 100 two-word positive messages
 positive_messages = [
@@ -66,7 +71,8 @@ def get_weather():
         return "N/A"
 
 # Function to fetch stock data from Alpha Vantage API
-def get_stock_price():
+def get_stock_price(symbol):
+    STOCK_API_URL = f'https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol={symbol}&apikey={ALPHA_VANTAGE_API_KEY}'
     try:
         response = requests.get(STOCK_API_URL)
         response.raise_for_status()  # Raise an exception for HTTP errors
@@ -76,7 +82,7 @@ def get_stock_price():
         global_quote = data['Global Quote']
         price = float(global_quote['05. price'])
         price_change = float(global_quote['09. change'])
-        stock_info = f"WMT: {price:.2f} ({price_change:+.2f})"
+        stock_info = f"{symbol}: {price:.2f} ({price_change:+.2f})"
         return stock_info
     except (requests.RequestException, KeyError) as e:
         # Handle request error or missing key error
@@ -148,8 +154,10 @@ def main():
     while True:
         # Display the date for 30 seconds
         display_date(lcd)
+        # Randomly choose a stock symbol
+        stock_symbol = random.choice(STOCK_SYMBOLS)
         # Fetch stock data
-        stock_str = get_stock_price()
+        stock_str = get_stock_price(stock_symbol)
         # Display the stock price for 15 seconds
         display_stock(lcd, stock_str)
         # Fetch weather data
