@@ -18,33 +18,33 @@ OPENWEATHERMAP_API_KEY = os.getenv('OPENWEATHERMAP_API_KEY')
 ALPHA_VANTAGE_API_KEY = os.getenv('ALPHA_VANTAGE_API_KEY')
 CITY = os.getenv('CITY_NAME')
 
-# List of stock symbols
-STOCK_SYMBOLS = [
-    "AAPL", "ADP", "AMZN", "BDX", "BFAM", "EMBC", "GDDY", "GOOG", "GOOGL", "INTC", "K", "KLG", "META",
-    "NFLX", "PEP", "SJM", "SYK", "T", "TMUS", "V", "VTI", "WBD", "DIS", "UPS", "MSFT", "MCD", "SBUX", 
-    "ASH", "WMT"
-]
+# Load data from files
+POSITIVE_MESSAGES_FILE = 'positive_messages.txt'
+STOCK_SYMBOLS_FILE = 'stock_symbols.txt'
+
+def load_positive_messages(filename):
+    try:
+        with open(filename, 'r') as file:
+            messages = [line.strip() for line in file if line.strip()]
+        return messages
+    except Exception as e:
+        print(f"Error loading positive messages: {e}")
+        return []
+
+def load_stock_symbols(filename):
+    try:
+        with open(filename, 'r') as file:
+            symbols = [line.strip() for line in file if line.strip()]
+        return symbols
+    except Exception as e:
+        print(f"Error loading stock symbols: {e}")
+        return []
+
+positive_messages = load_positive_messages(POSITIVE_MESSAGES_FILE)
+stock_symbols = load_stock_symbols(STOCK_SYMBOLS_FILE)
 
 # Construct API URLs
 WEATHER_API_URL = f'http://api.openweathermap.org/data/2.5/weather?q={CITY}&appid={OPENWEATHERMAP_API_KEY}&units=imperial'
-
-# Array of 100 two-word positive messages
-positive_messages = [
-    "Stay Positive", "Be Kind", "Stay Strong", "Keep Smiling", "Be Happy", "Stay Awesome", "You Rock",
-    "Be Grateful", "Stay Humble", "Keep Going", "Shine Bright", "Be Brave", "Stay Focused", "Be Yourself",
-    "Stay True", "Be Inspired", "Dream Big", "Stay Calm", "Be Creative", "Stay Motivated", "Keep Growing",
-    "Stay Confident", "Be Resilient", "Keep Learning", "Stay Curious", "Be Adventurous", "Stay Determined",
-    "Be Generous", "Stay Healthy", "Be Mindful", "Stay Balanced", "Be Optimistic", "Stay Positive", "Keep Faith",
-    "Be Honest", "Stay Loyal", "Be Compassionate", "Stay Encouraged", "Be Patient", "Stay Driven", "Be Forgiving",
-    "Stay Courageous", "Be Supportive", "Stay Joyful", "Be Resourceful", "Stay Inspired", "Be Fearless", "Stay Grateful",
-    "Be Thoughtful", "Stay Vibrant", "Be Authentic", "Stay Kind", "Be Energetic", "Stay Persistent", "Be Flexible",
-    "Stay Focused", "Be Reliable", "Stay Peaceful", "Be Cheerful", "Stay Strong", "Be Loving", "Stay Proud", "Be Hopeful",
-    "Stay Enthusiastic", "Be Friendly", "Stay Trustworthy", "Be Devoted", "Stay Content", "Be Generous", "Stay Thankful",
-    "Be Selfless", "Stay Bright", "Be Positive", "Stay Passionate", "Be Humble", "Stay Blissful", "Be Charitable", "Stay Brave",
-    "Be Uplifting", "Stay Kindhearted", "Be Motivated", "Stay Warmhearted", "Be Sympathetic", "Stay Empathetic", "Be Forgiving",
-    "Stay Joyous", "Be Understanding", "Stay Lighthearted", "Be Supportive", "Stay Hopeful", "Be Proud", "Stay Faithful", "Be Confident",
-    "Stay Radiant", "Be Playful", "Stay Unique", "Be Talented"
-]
 
 # Function to initialize the LCD display
 def initialize_lcd():
@@ -174,7 +174,7 @@ def main():
         # Check if the current time is within allowed hours and if we haven't exceeded the API call limit
         if is_within_allowed_hours() and api_call_count < max_api_calls:
             # Randomly choose a stock symbol
-            stock_symbol = random.choice(STOCK_SYMBOLS)
+            stock_symbol = random.choice(stock_symbols)
             # Fetch stock data
             stock_str = get_stock_price(stock_symbol)
             api_call_count += 1
