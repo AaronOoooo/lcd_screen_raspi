@@ -62,8 +62,8 @@ def get_weather():
         response = requests.get(WEATHER_API_URL)
         response.raise_for_status()  # Raise an exception for HTTP errors
         data = response.json()
-        temperature = data['main']['temp']
-        weather = f"{temperature:.1f} F"
+        temperature = int(data['main']['temp'])  # Convert temperature to integer
+        weather = f"{temperature} F"
         return weather
     except requests.RequestException as e:
         # Handle request error
