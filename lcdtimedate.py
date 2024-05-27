@@ -1,7 +1,7 @@
 import sys
 import os
 import requests
-from datetime import datetime
+from datetime import datetime, time, timedelta
 from time import sleep
 from dotenv import load_dotenv
 import random
@@ -147,19 +147,44 @@ def display_weather(lcd, weather_str):
 
         sleep(1)
 
+# Function to check if the current time is within the allowed hours
+def is_within_allowed_hours():
+    now = datetime.now()
+    start_time = time(8, 30)  # 8:30 AM CST
+    end_time = time(15, 0)    # 3:00 PM CST
+    return start_time <= now.time() <= end_time
+
 # Main function to control the program flow
 def main():
     lcd = initialize_lcd()
-    
+    api_call_count = 0
+    max_api_calls = 25
+    last_api_call_time = None
+    reset_time = datetime.now().replace(hour=8, minute=30, second=0, microsecond=0) + timedelta(days=1)
+
     while True:
+        # Reset the API call count at the start of each new day
+        if datetime.now() >= reset_time:
+            api_call_count = 0
+            reset_time += timedelta(days=1)
+        
         # Display the date for 30 seconds
         display_date(lcd)
-        # Randomly choose a stock symbol
-        stock_symbol = random.choice(STOCK_SYMBOLS)
-        # Fetch stock data
-        stock_str = get_stock_price(stock_symbol)
-        # Display the stock price for 15 seconds
+
+        # Check if the current time is within allowed hours and if we haven't exceeded the API call limit
+        if is_within_allowed_hours() and api_call_count < max_api_calls:
+            # Randomly choose a stock symbol
+            stock_symbol = random.choice(STOCK_SYMBOLS)
+            # Fetch stock data
+            stock_str = get_stock_price(stock_symbol)
+            api_call_count += 1
+            last_api_call_time = datetime.now()
+        else:
+            stock_str = random.choice(positive_messages)
+
+        # Display the stock price or positive message for 15 seconds
         display_stock(lcd, stock_str)
+
         # Fetch weather data
         weather_str = get_weather()
         # Display the weather for 15 seconds
