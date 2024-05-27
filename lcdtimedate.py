@@ -75,8 +75,12 @@ def get_weather():
         response = requests.get(WEATHER_API_URL)
         response.raise_for_status()  # Raise an exception for HTTP errors
         data = response.json()
+        
+        # Extract temperature and weather main description
         temperature = int(data['main']['temp'])  # Convert temperature to integer
-        weather = f"{temperature}\x00F"  # Use custom degree symbol (char code 0)
+        weather_main = data['weather'][0]['main']  # Extract the main weather description
+
+        weather = f"{temperature}\x00F {weather_main}"  # Use custom degree symbol (char code 0)
         return weather
     except requests.RequestException as e:
         # Handle request error
