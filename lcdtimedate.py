@@ -50,6 +50,19 @@ WEATHER_API_URL = f'http://api.openweathermap.org/data/2.5/weather?q={CITY}&appi
 def initialize_lcd():
     try:
         lcd = I2C_LCD_driver.lcd()
+        
+        # Define custom character for degree symbol
+        degree_symbol = [
+            0b01100,
+            0b10010,
+            0b10010,
+            0b01100,
+            0b00000,
+            0b00000,
+            0b00000,
+            0b00000,
+        ]
+        lcd.lcd_load_custom_chars([degree_symbol])
         return lcd
     except Exception as e:
         # Handle initialization error
@@ -63,7 +76,7 @@ def get_weather():
         response.raise_for_status()  # Raise an exception for HTTP errors
         data = response.json()
         temperature = int(data['main']['temp'])  # Convert temperature to integer
-        weather = f"{temperature} F"
+        weather = f"{temperature}\x00F"  # Use custom degree symbol (char code 0)
         return weather
     except requests.RequestException as e:
         # Handle request error
