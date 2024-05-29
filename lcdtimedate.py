@@ -21,6 +21,7 @@ CITY = os.getenv('CITY_NAME')
 # Load data from files
 POSITIVE_MESSAGES_FILE = 'positive_messages.txt'
 STOCK_SYMBOLS_FILE = 'stock_symbols.txt'
+LOG_FILE = 'lcd_screen_log.txt'
 
 # Function to load positive messages from a file
 def load_positive_messages(filename):
@@ -122,6 +123,9 @@ def display_date(lcd):
         lcd.lcd_display_string(date_str.center(16), 1)
         lcd.lcd_display_string(time_str.center(16), 2)
 
+        # Log the displayed information
+        log_to_file(date_str, time_str)
+
         sleep(1)
 
 # Function to display stock information on the LCD
@@ -136,6 +140,9 @@ def display_stock(lcd, stock_str):
         lcd.lcd_clear()
         lcd.lcd_display_string(stock_str.center(16), 1)
         lcd.lcd_display_string(time_str.center(16), 2)
+
+        # Log the displayed information
+        log_to_file(stock_str, time_str)
 
         sleep(1)
 
@@ -152,7 +159,18 @@ def display_weather(lcd, weather_str):
         lcd.lcd_display_string(weather_str.center(16), 1)
         lcd.lcd_display_string(time_str.center(16), 2)
 
+        # Log the displayed information
+        log_to_file(weather_str, time_str)
+
         sleep(1)
+
+# Function to log displayed information to a file
+def log_to_file(line1, line2):
+    try:
+        with open(LOG_FILE, 'a') as log_file:
+            log_file.write(f"{datetime.now()}: {line1} | {line2}\n")
+    except Exception as e:
+        print(f"Error logging to file: {e}")
 
 # Function to check if current time is within allowed hours
 def is_within_allowed_hours():
