@@ -22,6 +22,7 @@ CITY = os.getenv('CITY_NAME')
 POSITIVE_MESSAGES_FILE = 'positive_messages.txt'
 STOCK_SYMBOLS_FILE = 'stock_symbols.txt'
 
+# Function to load positive messages from a file
 def load_positive_messages(filename):
     try:
         with open(filename, 'r') as file:
@@ -31,6 +32,7 @@ def load_positive_messages(filename):
         print(f"Error loading positive messages: {e}")
         return []
 
+# Function to load stock symbols from a file
 def load_stock_symbols(filename):
     try:
         with open(filename, 'r') as file:
@@ -40,9 +42,11 @@ def load_stock_symbols(filename):
         print(f"Error loading stock symbols: {e}")
         return []
 
+# Load positive messages and stock symbols
 positive_messages = load_positive_messages(POSITIVE_MESSAGES_FILE)
 stock_symbols = load_stock_symbols(STOCK_SYMBOLS_FILE)
 
+# Function to initialize the LCD display
 def initialize_lcd():
     try:
         lcd = I2C_LCD_driver.lcd()
@@ -64,21 +68,26 @@ def initialize_lcd():
         print(f"Error initializing LCD: {e}")
         sys.exit(1)
 
+# Function to fetch weather data from OpenWeatherMap API
 def get_weather():
+    WEATHER_API_URL = f'http://api.openweathermap.org/data/2.5/weather?q={CITY}&appid={OPENWEATHERMAP_API_KEY}&units=imperial'
     try:
         response = requests.get(WEATHER_API_URL)
         response.raise_for_status()
         data = response.json()
         
+        # Extract temperature and main weather condition
         temperature = int(data['main']['temp'])
         weather_main = data['weather'][0]['main']
         
+        # Format weather information for display
         weather = f"{temperature}\x00F {weather_main}"
         return weather
     except requests.RequestException as e:
         print(f"Error fetching weather data: {e}")
         return "N/A"
 
+# Function to fetch stock data from Alpha Vantage API
 def get_stock_price(symbol):
     STOCK_API_URL = f'https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol={symbol}&apikey={ALPHA_VANTAGE_API_KEY}'
     try:
@@ -96,6 +105,7 @@ def get_stock_price(symbol):
         print(f"Error fetching stock data: {e}")
         return random.choice(positive_messages)
 
+# Function to display the date on the LCD
 def display_date(lcd):
     now = datetime.now()
     month_abbr = now.strftime("%b")
@@ -114,6 +124,7 @@ def display_date(lcd):
 
         sleep(1)
 
+# Function to display stock information on the LCD
 def display_stock(lcd, stock_str):
     for _ in range(15):
         now = datetime.now()
@@ -128,6 +139,7 @@ def display_stock(lcd, stock_str):
 
         sleep(1)
 
+# Function to display weather information on the LCD
 def display_weather(lcd, weather_str):
     for _ in range(15):
         now = datetime.now()
@@ -142,17 +154,20 @@ def display_weather(lcd, weather_str):
 
         sleep(1)
 
+# Function to check if current time is within allowed hours
 def is_within_allowed_hours():
     now = datetime.now()
     start_time = time(8, 30)  # 8:30 AM CST
     end_time = time(15, 0)    # 3:00 PM CST
     return start_time <= now.time() <= end_time
 
+# Main function to control the program flow
 def main():
     lcd = initialize_lcd()
     api_call_count = 0
     max_api_calls = 25
     
+    # Define start and end times for allowed API call period
     start_time = datetime.now().replace(hour=8, minute=30, second=0, microsecond=0)
     end_time = datetime.now().replace(hour=15, minute=0, second=0, microsecond=0)
     total_duration = (end_time - start_time).seconds
@@ -169,9 +184,12 @@ def main():
             start_time += timedelta(days=1)
             end_time += timedelta(days=1)
 
+        # Display the date for 30 seconds
         display_date(lcd)
 
+        # Check if current time is within allowed hours and API call count is within the limit
         if is_within_allowed_hours() and api_call_count < max_api_calls:
+            # Ensure the interval between API calls is respected
             if last_api_call_time is None or (current_time - last_api_call_time).seconds >= api_call_interval:
                 stock_symbol = random.choice(stock_symbols)
                 stock_str = get_stock_price(stock_symbol)
@@ -182,8 +200,10 @@ def main():
         else:
             stock_str = random.choice(positive_messages)
 
+        # Display the stock information or a positive message for 15 seconds
         display_stock(lcd, stock_str)
 
+        # Fetch and display the weather information for 15 seconds
         weather_str = get_weather()
         display_weather(lcd, weather_str)
 
