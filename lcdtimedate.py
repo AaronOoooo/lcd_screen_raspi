@@ -21,7 +21,7 @@ CITY = os.getenv('CITY_NAME')
 # Load data from files
 POSITIVE_MESSAGES_FILE = 'positive_messages.txt'
 STOCK_SYMBOLS_FILE = 'stock_symbols.txt'
-LOG_FILE = 'lcd_screen_log.txt'
+LOG_FILE = 'log_lcd_screen.txt'
 
 # Function to load positive messages from a file
 def load_positive_messages(filename):
