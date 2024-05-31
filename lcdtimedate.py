@@ -123,7 +123,6 @@ def display_date(lcd):
         lcd.lcd_display_string(date_str.center(16), 1)
         lcd.lcd_display_string(time_str.center(16), 2)
 
-        # Log the displayed information
         log_to_file(date_str, time_str)
 
         sleep(1)
@@ -141,7 +140,6 @@ def display_stock(lcd, stock_str):
         lcd.lcd_display_string(stock_str.center(16), 1)
         lcd.lcd_display_string(time_str.center(16), 2)
 
-        # Log the displayed information
         log_to_file(stock_str, time_str)
 
         sleep(1)
@@ -159,7 +157,6 @@ def display_weather(lcd, weather_str):
         lcd.lcd_display_string(weather_str.center(16), 1)
         lcd.lcd_display_string(time_str.center(16), 2)
 
-        # Log the displayed information
         log_to_file(weather_str, time_str)
 
         sleep(1)
@@ -181,16 +178,32 @@ def is_within_allowed_hours():
 
 # Function to display the opening message
 def display_opening_message(lcd):
-    lcd.lcd_clear()
-    lcd.lcd_display_string("Signally".center(16), 1)
-    lcd.lcd_display_string("LCD".center(16), 2)
+    message_line1 = "Signally"
+    message_line2 = "LCD"
+    total_length = 16
+    
+    # Swipe in from the right to the center
+    for i in range(total_length, (total_length - len(message_line1)) // 2, -1):
+        lcd.lcd_clear()
+        lcd.lcd_display_string(message_line1.rjust(i + len(message_line1)), 1)
+        lcd.lcd_display_string(message_line2.rjust(i + len(message_line2)), 2)
+        sleep(0.1)
+    
+    # Stay for 5 seconds
     sleep(5)
+    
+    # Simulate fade out by replacing characters with spaces
+    for i in range(len(message_line1)):
+        lcd.lcd_clear()
+        lcd.lcd_display_string(" " * (i + 1) + message_line1[i + 1:], 1)
+        lcd.lcd_display_string(" " * (i + 1) + message_line2[i + 1:], 2)
+        sleep(0.1)
 
 # Main function to control the program flow
 def main():
     lcd = initialize_lcd()
     
-    # Display the opening message for 5 seconds
+    # Display the opening message with swipe in and fade out
     display_opening_message(lcd)
 
     api_call_count = 0
