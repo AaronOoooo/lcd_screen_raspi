@@ -179,9 +179,20 @@ def is_within_allowed_hours():
     end_time = time(15, 0)    # 3:00 PM CST
     return start_time <= now.time() <= end_time
 
+# Function to display the opening message
+def display_opening_message(lcd):
+    lcd.lcd_clear()
+    lcd.lcd_display_string("Signally".center(16), 1)
+    lcd.lcd_display_string("LCD".center(16), 2)
+    sleep(5)
+
 # Main function to control the program flow
 def main():
     lcd = initialize_lcd()
+    
+    # Display the opening message for 5 seconds
+    display_opening_message(lcd)
+
     api_call_count = 0
     max_api_calls = 25
     
