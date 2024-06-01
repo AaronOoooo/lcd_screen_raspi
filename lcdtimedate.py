@@ -27,6 +27,7 @@ if not all([OPENWEATHERMAP_API_KEY, ALPHA_VANTAGE_API_KEY, CITY]):
 POSITIVE_MESSAGES_FILE = 'positive_messages.txt'
 STOCK_SYMBOLS_FILE = 'stock_symbols.txt'
 LOG_FILE = 'log_lcd_screen.txt'
+LAST_DELETION_FILE = 'last_deletion.txt'
 
 # Function to load positive messages from a file
 def load_positive_messages(filename):
@@ -181,6 +182,28 @@ def is_within_allowed_hours():
     end_time = time(15, 0)    # 3:00 PM CST
     return start_time <= now.time() <= end_time
 
+# Function to delete the log file every two days at 2 AM CST
+def delete_log_file():
+    now = datetime.now()
+    if os.path.exists(LAST_DELETION_FILE):
+        with open(LAST_DELETION_FILE, 'r') as file:
+            last_deletion_date = datetime.fromisoformat(file.read().strip())
+    else:
+        last_deletion_date = now - timedelta(days=3)  # Set to more than 2 days ago initially
+
+    # Check if it's 2 AM CST and more than two days have passed since the last deletion
+    if now.time() >= time(2, 0) and (now - last_deletion_date).days >= 2:
+        try:
+            if os.path.exists(LOG_FILE):
+                os.remove(LOG_FILE)
+                print("Log file deleted.")
+
+            with open(LAST_DELETION_FILE, 'w') as file:
+                file.write(now.isoformat())
+
+        except Exception as e:
+            print(f"Error deleting log file: {e}")
+
 # Function to display the opening message
 def display_opening_message(lcd):
     message_line1 = "Signally"
@@ -253,6 +276,9 @@ def main():
         # Fetch and display the weather information for 15 seconds
         weather_str = get_weather()
         display_weather(lcd, weather_str)
+
+        # Delete the log file if necessary
+        delete_log_file()
 
 if __name__ == "__main__":
     main()
