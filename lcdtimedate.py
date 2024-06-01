@@ -18,6 +18,11 @@ OPENWEATHERMAP_API_KEY = os.getenv('OPENWEATHERMAP_API_KEY')
 ALPHA_VANTAGE_API_KEY = os.getenv('ALPHA_VANTAGE_API_KEY')
 CITY = os.getenv('CITY_NAME')
 
+# Ensure required environment variables are set
+if not all([OPENWEATHERMAP_API_KEY, ALPHA_VANTAGE_API_KEY, CITY]):
+    print("Missing required environment variables.")
+    sys.exit(1)
+
 # Load data from files
 POSITIVE_MESSAGES_FILE = 'positive_messages.txt'
 STOCK_SYMBOLS_FILE = 'stock_symbols.txt'
