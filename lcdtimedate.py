@@ -16,10 +16,11 @@ load_dotenv()
 # Load API keys and city from environment variables
 OPENWEATHERMAP_API_KEY = os.getenv('OPENWEATHERMAP_API_KEY')
 ALPHA_VANTAGE_API_KEY = os.getenv('ALPHA_VANTAGE_API_KEY')
+RAPIDAPI_KEY = os.getenv('RAPIDAPI_KEY')
 CITY = os.getenv('CITY_NAME')
 
 # Ensure required environment variables are set
-if not all([OPENWEATHERMAP_API_KEY, ALPHA_VANTAGE_API_KEY, CITY]):
+if not all([OPENWEATHERMAP_API_KEY, ALPHA_VANTAGE_API_KEY, RAPIDAPI_KEY, CITY]):
     print("Missing required environment variables.")
     sys.exit(1)
 
@@ -95,7 +96,7 @@ def get_weather():
         return "N/A"
 
 # Function to fetch stock data from Alpha Vantage API
-def get_stock_price(symbol):
+def get_stock_price_alpha_vantage(symbol):
     STOCK_API_URL = f'https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol={symbol}&apikey={ALPHA_VANTAGE_API_KEY}'
     try:
         response = requests.get(STOCK_API_URL)
@@ -110,6 +111,25 @@ def get_stock_price(symbol):
         return stock_info
     except (requests.RequestException, KeyError) as e:
         print(f"Error fetching stock data: {e}")
+        return random.choice(positive_messages)
+
+# Function to fetch stock data from RapidAPI
+def get_stock_price_rapidapi(symbol):
+    url = f"https://yahoo-finance127.p.rapidapi.com/price/{symbol}"
+    headers = {
+        "X-RapidAPI-Key": RAPIDAPI_KEY,
+        "X-RapidAPI-Host": "yahoo-finance127.p.rapidapi.com"
+    }
+    try:
+        response = requests.get(url, headers=headers)
+        response.raise_for_status()
+        data = response.json()
+        price = data['price']
+        price_change = data['change']
+        stock_info = f"{symbol}: {price:.2f} ({price_change:+.2f})"
+        return stock_info
+    except (requests.RequestException, KeyError) as e:
+        print(f"Error fetching stock data from RapidAPI: {e}")
         return random.choice(positive_messages)
 
 # Function to display the date on the LCD
@@ -135,7 +155,7 @@ def display_date(lcd):
 
 # Function to display stock information on the LCD
 def display_stock(lcd, stock_str):
-    for _ in range(15):
+    for _ in range(30):
         now = datetime.now()
         time_str = now.strftime("%I:%M:%S %p")
 
@@ -262,7 +282,11 @@ def main():
             # Ensure the interval between API calls is respected
             if last_api_call_time is None or (current_time - last_api_call_time).seconds >= api_call_interval:
                 stock_symbol = random.choice(stock_symbols)
-                stock_str = get_stock_price(stock_symbol)
+                # Randomly decide which API to use
+                if random.choice([True, False]):
+                    stock_str = get_stock_price_alpha_vantage(stock_symbol)
+                else:
+                    stock_str = get_stock_price_rapidapi(stock_symbol)
                 api_call_count += 1
                 last_api_call_time = current_time
             else:
@@ -270,7 +294,7 @@ def main():
         else:
             stock_str = random.choice(positive_messages)
 
-        # Display the stock information or a positive message for 15 seconds
+        # Display the stock information or a positive message for 30 seconds
         display_stock(lcd, stock_str)
 
         # Fetch and display the weather information for 15 seconds
