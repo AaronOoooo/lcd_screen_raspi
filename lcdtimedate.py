@@ -155,7 +155,7 @@ def display_date(lcd):
 
 # Function to display stock information on the LCD
 def display_stock(lcd, stock_str):
-    for _ in range(30):
+    for _ in range(15):
         now = datetime.now()
         time_str = now.strftime("%I:%M:%S %p")
 
@@ -247,46 +247,38 @@ def display_opening_message(lcd):
         lcd.lcd_display_string(" " * (i + 1) + message_line2[i + 1:], 2)
         sleep(0.1)
 
-# Main function to control the program flow
+# Main function that runs the display loop
 def main():
     lcd = initialize_lcd()
-    
-    # Display the opening message with swipe in and fade out
     display_opening_message(lcd)
 
     api_call_count = 0
     max_api_calls = 25
-    
-    # Define start and end times for allowed API call period
+
     start_time = datetime.now().replace(hour=8, minute=30, second=0, microsecond=0)
     end_time = datetime.now().replace(hour=15, minute=0, second=0, microsecond=0)
     total_duration = (end_time - start_time).seconds
-    api_call_interval = total_duration // max_api_calls  # Interval in seconds
-    
+    api_call_interval = total_duration // max_api_calls
     last_api_call_time = None
-    
+
     while True:
         current_time = datetime.now()
 
-        # Reset the API call count at the start of each day
         if current_time >= start_time + timedelta(days=1):
             api_call_count = 0
             start_time += timedelta(days=1)
             end_time += timedelta(days=1)
 
-        # Display the date for 30 seconds
         display_date(lcd)
 
-        # Check if current time is within allowed hours and API call count is within the limit
         if is_within_allowed_hours() and api_call_count < max_api_calls:
-            # Ensure the interval between API calls is respected
             if last_api_call_time is None or (current_time - last_api_call_time).seconds >= api_call_interval:
                 stock_symbol = random.choice(stock_symbols)
-                # Randomly decide which API to use
                 if random.choice([True, False]):
                     stock_str = get_stock_price_alpha_vantage(stock_symbol)
                 else:
                     stock_str = get_stock_price_rapidapi(stock_symbol)
+
                 api_call_count += 1
                 last_api_call_time = current_time
             else:
@@ -294,15 +286,11 @@ def main():
         else:
             stock_str = random.choice(positive_messages)
 
-        # Display the stock information or a positive message for 30 seconds
         display_stock(lcd, stock_str)
-
-        # Fetch and display the weather information for 15 seconds
         weather_str = get_weather()
         display_weather(lcd, weather_str)
-
-        # Delete the log file if necessary
         delete_log_file()
 
+# Entry point of the program
 if __name__ == "__main__":
     main()
