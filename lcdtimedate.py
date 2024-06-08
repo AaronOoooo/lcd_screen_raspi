@@ -5,6 +5,7 @@ from datetime import datetime, time, timedelta
 from time import sleep
 from dotenv import load_dotenv
 import random
+import json
 
 # Import the LCD driver module
 sys.path.append('./I2C_LCD_driver')
@@ -29,7 +30,7 @@ POSITIVE_MESSAGES_FILE = 'positive_messages.txt'
 STOCK_SYMBOLS_FILE = 'stock_symbols.txt'
 LOG_FILE = 'log_lcd_screen.txt'
 LAST_DELETION_FILE = 'last_deletion.txt'
-STOCK_CACHE_FILE = 'stock_cache.txt'
+STOCK_CACHE_FILE = 'stock_cache.json'
 
 # Function to load positive messages from a file
 def load_positive_messages(filename):
@@ -120,7 +121,7 @@ def get_stock_price_rapidapi(symbol):
     stock_cache = load_stock_cache()
     
     # Check if the stock data is in the cache and is still valid
-    if symbol in stock_cache and (now - stock_cache[symbol]['timestamp']).seconds < 1800:
+    if symbol in stock_cache and (now - datetime.fromisoformat(stock_cache[symbol]['timestamp'])).seconds < 1800:
         return stock_cache[symbol]['stock_info']
 
     url = f"https://yahoo-finance127.p.rapidapi.com/price/{symbol}"
@@ -139,7 +140,7 @@ def get_stock_price_rapidapi(symbol):
         # Cache the stock data
         stock_cache[symbol] = {
             'stock_info': stock_info,
-            'timestamp': now
+            'timestamp': now.isoformat()
         }
         save_stock_cache(stock_cache)
         
@@ -153,8 +154,7 @@ def load_stock_cache():
     try:
         if os.path.exists(STOCK_CACHE_FILE):
             with open(STOCK_CACHE_FILE, 'r') as file:
-                cache = eval(file.read())
-                return cache
+                return json.load(file)
         else:
             return {}
     except Exception as e:
@@ -165,7 +165,7 @@ def load_stock_cache():
 def save_stock_cache(cache):
     try:
         with open(STOCK_CACHE_FILE, 'w') as file:
-            file.write(str(cache))
+            json.dump(cache, file)
     except Exception as e:
         print(f"Error saving stock cache: {e}")
 
