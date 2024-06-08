@@ -124,8 +124,8 @@ def get_stock_price_rapidapi(symbol):
         response = requests.get(url, headers=headers)
         response.raise_for_status()
         data = response.json()
-        price = data['price']
-        price_change = data['change']
+        price = data['regularMarketPrice']['raw']
+        price_change = data['regularMarketChange']['raw']
         stock_info = f"{symbol}: {price:.2f} ({price_change:+.2f})"
         return stock_info
     except (requests.RequestException, KeyError) as e:
