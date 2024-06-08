@@ -29,6 +29,7 @@ POSITIVE_MESSAGES_FILE = 'positive_messages.txt'
 STOCK_SYMBOLS_FILE = 'stock_symbols.txt'
 LOG_FILE = 'log_lcd_screen.txt'
 LAST_DELETION_FILE = 'last_deletion.txt'
+STOCK_CACHE_FILE = 'stock_cache.txt'
 
 # Function to load positive messages from a file
 def load_positive_messages(filename):
@@ -113,8 +114,15 @@ def get_stock_price_alpha_vantage(symbol):
         print(f"Error fetching stock data: {e}")
         return random.choice(positive_messages)
 
-# Function to fetch stock data from RapidAPI
+# Function to fetch stock data from RapidAPI with caching and rate limiting
 def get_stock_price_rapidapi(symbol):
+    now = datetime.now()
+    stock_cache = load_stock_cache()
+    
+    # Check if the stock data is in the cache and is still valid
+    if symbol in stock_cache and (now - stock_cache[symbol]['timestamp']).seconds < 1800:
+        return stock_cache[symbol]['stock_info']
+
     url = f"https://yahoo-finance127.p.rapidapi.com/price/{symbol}"
     headers = {
         "X-RapidAPI-Key": RAPIDAPI_KEY,
@@ -127,10 +135,39 @@ def get_stock_price_rapidapi(symbol):
         price = data['regularMarketPrice']['raw']
         price_change = data['regularMarketChange']['raw']
         stock_info = f"{symbol}: {price:.2f} ({price_change:+.2f})"
+        
+        # Cache the stock data
+        stock_cache[symbol] = {
+            'stock_info': stock_info,
+            'timestamp': now
+        }
+        save_stock_cache(stock_cache)
+        
         return stock_info
     except (requests.RequestException, KeyError) as e:
         print(f"Error fetching stock data from RapidAPI: {e}")
         return random.choice(positive_messages)
+
+# Function to load stock cache from a file
+def load_stock_cache():
+    try:
+        if os.path.exists(STOCK_CACHE_FILE):
+            with open(STOCK_CACHE_FILE, 'r') as file:
+                cache = eval(file.read())
+                return cache
+        else:
+            return {}
+    except Exception as e:
+        print(f"Error loading stock cache: {e}")
+        return {}
+
+# Function to save stock cache to a file
+def save_stock_cache(cache):
+    try:
+        with open(STOCK_CACHE_FILE, 'w') as file:
+            file.write(str(cache))
+    except Exception as e:
+        print(f"Error saving stock cache: {e}")
 
 # Function to display the date on the LCD
 def display_date(lcd):
@@ -155,7 +192,7 @@ def display_date(lcd):
 
 # Function to display stock information on the LCD
 def display_stock(lcd, stock_str):
-    for _ in range(15):
+    for _ in range(30):  # Display for 30 seconds
         now = datetime.now()
         time_str = now.strftime("%I:%M:%S %p")
 
@@ -253,7 +290,7 @@ def main():
     display_opening_message(lcd)
 
     api_call_count = 0
-    max_api_calls = 25
+    max_api_calls = 35
 
     start_time = datetime.now().replace(hour=8, minute=30, second=0, microsecond=0)
     end_time = datetime.now().replace(hour=15, minute=0, second=0, microsecond=0)
@@ -264,10 +301,9 @@ def main():
     while True:
         current_time = datetime.now()
 
-        if current_time >= start_time + timedelta(days=1):
+        # Reset API call count at midnight
+        if current_time.hour == 0 and current_time.minute == 0:
             api_call_count = 0
-            start_time += timedelta(days=1)
-            end_time += timedelta(days=1)
 
         display_date(lcd)
 
