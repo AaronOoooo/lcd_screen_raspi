@@ -26,3 +26,16 @@ Main loop to update the display with date, stock prices, and weather at appropri
 Execution:
 
 Entry point to run the main function when the script is executed.
+
+File structure:
+    lcd_screen_raspi/
+    |-- I2C_LCD_driver/
+    |   |-- I2C_LCD_driver.py
+    |-- lcd_utils.py
+    |-- lcdtimedate.py
+    |-- positive_messages.txt
+    |-- stock_symbols.txt
+    |-- log_lcd_screen.txt
+    |-- last_deletion.txt
+    |-- stock_cache.json
+    |-- .env
