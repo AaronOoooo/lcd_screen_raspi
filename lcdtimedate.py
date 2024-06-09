@@ -263,26 +263,29 @@ def delete_log_file():
             print(f"Error deleting log file: {e}")
 
 # Function to display the opening message
+
 def display_opening_message(lcd):
     message_line1 = "Signally"
     message_line2 = "LCD"
     total_length = 16
-    
+
     # Swipe in from the right to the center
     for i in range(total_length, (total_length - len(message_line1)) // 2, -1):
         lcd.lcd_clear()
         lcd.lcd_display_string(message_line1.rjust(i + len(message_line1)), 1)
         lcd.lcd_display_string(message_line2.rjust(i + len(message_line2)), 2)
         sleep(0.1)
-    
+
     # Stay for 5 seconds
     sleep(5)
-    
-    # Simulate fade out by replacing characters with spaces
+
+    # Simulate fade out by replacing characters with spaces, keeping text centered
     for i in range(len(message_line1)):
         lcd.lcd_clear()
-        lcd.lcd_display_string(" " * (i + 1) + message_line1[i + 1:], 1)
-        lcd.lcd_display_string(" " * (i + 1) + message_line2[i + 1:], 2)
+        fade_line1 = message_line1[:len(message_line1) - i].ljust(len(message_line1))
+        fade_line2 = message_line2[:len(message_line2) - i].ljust(len(message_line2))
+        lcd.lcd_display_string(fade_line1.center(total_length), 1)
+        lcd.lcd_display_string(fade_line2.center(total_length), 2)
         sleep(0.1)
 
 # Main function that runs the display loop
