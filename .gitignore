@@ -1,3 +1,5 @@
 .env
 log_lcd_screen.txt
 last_deletion.txt
+stock_cache.json
+stock_cache.txt
