@@ -1,3 +1,4 @@
+# Signally LCD
 import sys
 import os
 import requests
@@ -109,7 +110,7 @@ def get_stock_price_alpha_vantage(symbol):
         global_quote = data['Global Quote']
         price = float(global_quote['05. price'])
         price_change = float(global_quote['09. change'])
-        stock_info = f"{symbol}: {price:.2f} ({price_change:+.2f})"
+        stock_info = f"{symbol}: {price:.2f} {price_change:+.2f}"
         return stock_info
     except (requests.RequestException, KeyError) as e:
         print(f"Error fetching stock data: {e}")
@@ -135,7 +136,7 @@ def get_stock_price_rapidapi(symbol):
         data = response.json()
         price = data['regularMarketPrice']['raw']
         price_change = data['regularMarketChange']['raw']
-        stock_info = f"{symbol}: {price:.2f} ({price_change:+.2f})"
+        stock_info = f"{symbol}: {price:.2f} {price_change:+.2f}"
         
         # Cache the stock data
         stock_cache[symbol] = {
