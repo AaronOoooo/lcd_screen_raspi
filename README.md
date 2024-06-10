@@ -39,3 +39,22 @@ File structure:
     |-- last_deletion.txt
     |-- stock_cache.json
     |-- .env
+
+UPDATE 06-10-2024
+Alpha Vantage API Calls:
+
+Calls are scheduled between 8:30 AM to 1:00 PM CST.
+No more than 25 calls are made in this time frame.
+Each call is spaced by at least 20 minutes.
+RapidAPI Calls:
+
+Calls are scheduled between 1:10 PM to 10:00 PM CST.
+No more than 30 calls are made in this time frame.
+Each call is spaced by at least 20 minutes.
+Positive Messages:
+
+Positive messages are displayed for 25 seconds to fill in time where no stock API call is due.
+The display cycle ensures a positive message is shown if the stock API calls are within the cooldown period.
+Weather API Calls:
+
+The weather API call scheduling remains unchanged to respect the original code's rate-limiting logic.

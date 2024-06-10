@@ -225,6 +225,23 @@ def display_weather(lcd, weather_str):
 
         sleep(1)
 
+# Function to display positive messages on the LCD
+def display_positive_message(lcd, message):
+    for _ in range(25):  # Display for 25 seconds
+        now = datetime.now()
+        time_str = now.strftime("%I:%M:%S %p")
+
+        print(message.center(16))
+        print(time_str.center(16))
+
+        lcd.lcd_clear()
+        lcd.lcd_display_string(message.center(16), 1)
+        lcd.lcd_display_string(time_str.center(16), 2)
+
+        log_to_file(message, time_str)
+
+        sleep(1)
+
 # Function to log displayed information to a file
 def log_to_file(line1, line2):
     try:
@@ -233,12 +250,19 @@ def log_to_file(line1, line2):
     except Exception as e:
         print(f"Error logging to file: {e}")
 
-# Function to check if current time is within allowed hours
-def is_within_allowed_hours():
-    now = datetime.now()
+# Function to check if current time is within Alpha Vantage API call hours
+def is_within_alpha_vantage_hours():
+    now = datetime.now().time()
     start_time = time(8, 30)  # 8:30 AM CST
-    end_time = time(15, 0)    # 3:00 PM CST
-    return start_time <= now.time() <= end_time
+    end_time = time(13, 0)    # 1:00 PM CST
+    return start_time <= now <= end_time
+
+# Function to check if current time is within RapidAPI call hours
+def is_within_rapidapi_hours():
+    now = datetime.now().time()
+    start_time = time(13, 10)  # 1:10 PM CST
+    end_time = time(22, 0)     # 10:00 PM CST
+    return start_time <= now <= end_time
 
 # Function to delete the log file every two days at 2 AM CST
 def delete_log_file():
@@ -263,7 +287,6 @@ def delete_log_file():
             print(f"Error deleting log file: {e}")
 
 # Function to display the opening message
-
 def display_opening_message(lcd):
     message_line1 = "Signally"
     message_line2 = "LCD"
@@ -293,40 +316,48 @@ def main():
     lcd = initialize_lcd()
     display_opening_message(lcd)
 
-    api_call_count = 0
-    max_api_calls = 35
-
-    start_time = datetime.now().replace(hour=8, minute=30, second=0, microsecond=0)
-    end_time = datetime.now().replace(hour=15, minute=0, second=0, microsecond=0)
-    total_duration = (end_time - start_time).seconds
-    api_call_interval = total_duration // max_api_calls
-    last_api_call_time = None
+    alpha_vantage_call_count = 0
+    rapidapi_call_count = 0
+    max_alpha_vantage_calls = 25
+    max_rapidapi_calls = 30
+    alpha_vantage_interval = 20 * 60  # 20 minutes in seconds
+    rapidapi_interval = 20 * 60  # 20 minutes in seconds
+    last_alpha_vantage_call_time = None
+    last_rapidapi_call_time = None
 
     while True:
         current_time = datetime.now()
-
-        # Reset API call count at midnight
-        if current_time.hour == 0 and current_time.minute == 0:
-            api_call_count = 0
-
         display_date(lcd)
 
-        if is_within_allowed_hours() and api_call_count < max_api_calls:
-            if last_api_call_time is None or (current_time - last_api_call_time).seconds >= api_call_interval:
+        # Reset API call counts at midnight
+        if current_time.hour == 0 and current_time.minute == 0:
+            alpha_vantage_call_count = 0
+            rapidapi_call_count = 0
+
+        if is_within_alpha_vantage_hours() and alpha_vantage_call_count < max_alpha_vantage_calls:
+            if last_alpha_vantage_call_time is None or (current_time - last_alpha_vantage_call_time).seconds >= alpha_vantage_interval:
                 stock_symbol = random.choice(stock_symbols)
-                if random.choice([True, False]):
-                    stock_str = get_stock_price_alpha_vantage(stock_symbol)
-                else:
-                    stock_str = get_stock_price_rapidapi(stock_symbol)
-
-                api_call_count += 1
-                last_api_call_time = current_time
+                stock_str = get_stock_price_alpha_vantage(stock_symbol)
+                alpha_vantage_call_count += 1
+                last_alpha_vantage_call_time = current_time
+                display_stock(lcd, stock_str)
             else:
-                stock_str = random.choice(positive_messages)
+                message = random.choice(positive_messages)
+                display_positive_message(lcd, message)
+        elif is_within_rapidapi_hours() and rapidapi_call_count < max_rapidapi_calls:
+            if last_rapidapi_call_time is None or (current_time - last_rapidapi_call_time).seconds >= rapidapi_interval:
+                stock_symbol = random.choice(stock_symbols)
+                stock_str = get_stock_price_rapidapi(stock_symbol)
+                rapidapi_call_count += 1
+                last_rapidapi_call_time = current_time
+                display_stock(lcd, stock_str)
+            else:
+                message = random.choice(positive_messages)
+                display_positive_message(lcd, message)
         else:
-            stock_str = random.choice(positive_messages)
+            message = random.choice(positive_messages)
+            display_positive_message(lcd, message)
 
-        display_stock(lcd, stock_str)
         weather_str = get_weather()
         display_weather(lcd, weather_str)
         delete_log_file()
