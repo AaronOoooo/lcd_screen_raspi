@@ -28,20 +28,25 @@ if not all([OPENWEATHERMAP_API_KEY, ALPHA_VANTAGE_API_KEY, RAPIDAPI_KEY, CITY]):
 
 # Load data from files
 POSITIVE_MESSAGES_FILE = 'positive_messages.txt'
+WELLNESS_MESSAGES_FILE = 'wellness_messages.txt'
 STOCK_SYMBOLS_FILE = 'stock_symbols.txt'
 LOG_FILE = 'log_lcd_screen.txt'
 LAST_DELETION_FILE = 'last_deletion.txt'
 STOCK_CACHE_FILE = 'stock_cache.json'
 
-# Function to load positive messages from a file
-def load_positive_messages(filename):
+# Function to load messages from a file
+def load_messages(filename):
     try:
         with open(filename, 'r') as file:
             messages = [line.strip() for line in file if line.strip()]
         return messages
     except Exception as e:
-        print(f"Error loading positive messages: {e}")
+        print(f"Error loading messages from {filename}: {e}")
         return []
+
+# Load positive and wellness messages
+positive_messages = load_messages(POSITIVE_MESSAGES_FILE)
+wellness_messages = load_messages(WELLNESS_MESSAGES_FILE)
 
 # Function to load stock symbols from a file
 def load_stock_symbols(filename):
@@ -53,8 +58,7 @@ def load_stock_symbols(filename):
         print(f"Error loading stock symbols: {e}")
         return []
 
-# Load positive messages and stock symbols
-positive_messages = load_positive_messages(POSITIVE_MESSAGES_FILE)
+# Load stock symbols
 stock_symbols = load_stock_symbols(STOCK_SYMBOLS_FILE)
 
 # Function to initialize the LCD display
@@ -225,8 +229,8 @@ def display_weather(lcd, weather_str):
 
         sleep(1)
 
-# Function to display positive messages on the LCD
-def display_positive_message(lcd, message):
+# Function to display positive or wellness messages on the LCD
+def display_message(lcd, message):
     for _ in range(25):  # Display for 25 seconds
         now = datetime.now()
         time_str = now.strftime("%I:%M:%S %p")
@@ -342,8 +346,8 @@ def main():
                 last_alpha_vantage_call_time = current_time
                 display_stock(lcd, stock_str)
             else:
-                message = random.choice(positive_messages)
-                display_positive_message(lcd, message)
+                message = random.choice(positive_messages + wellness_messages)
+                display_message(lcd, message)
         elif is_within_rapidapi_hours() and rapidapi_call_count < max_rapidapi_calls:
             if last_rapidapi_call_time is None or (current_time - last_rapidapi_call_time).seconds >= rapidapi_interval:
                 stock_symbol = random.choice(stock_symbols)
@@ -352,11 +356,11 @@ def main():
                 last_rapidapi_call_time = current_time
                 display_stock(lcd, stock_str)
             else:
-                message = random.choice(positive_messages)
-                display_positive_message(lcd, message)
+                message = random.choice(positive_messages + wellness_messages)
+                display_message(lcd, message)
         else:
-            message = random.choice(positive_messages)
-            display_positive_message(lcd, message)
+            message = random.choice(positive_messages + wellness_messages)
+            display_message(lcd, message)
 
         weather_str = get_weather()
         display_weather(lcd, weather_str)
