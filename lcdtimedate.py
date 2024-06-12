@@ -29,6 +29,7 @@ if not all([OPENWEATHERMAP_API_KEY, ALPHA_VANTAGE_API_KEY, RAPIDAPI_KEY, CITY]):
 # Load data from files
 POSITIVE_MESSAGES_FILE = 'positive_messages.txt'
 WELLNESS_MESSAGES_FILE = 'wellness_messages.txt'
+HISTORICAL_MESSAGES_FILE = 'historical_messages.txt'
 STOCK_SYMBOLS_FILE = 'stock_symbols.txt'
 LOG_FILE = 'log_lcd_screen.txt'
 LAST_DELETION_FILE = 'last_deletion.txt'
@@ -44,9 +45,10 @@ def load_messages(filename):
         print(f"Error loading messages from {filename}: {e}")
         return []
 
-# Load positive and wellness messages
+# Load positive, wellness, and historical messages
 positive_messages = load_messages(POSITIVE_MESSAGES_FILE)
 wellness_messages = load_messages(WELLNESS_MESSAGES_FILE)
+historical_messages = load_messages(HISTORICAL_MESSAGES_FILE)
 
 # Function to load stock symbols from a file
 def load_stock_symbols(filename):
@@ -246,6 +248,29 @@ def display_message(lcd, message):
 
         sleep(1)
 
+# Function to display historical messages on the LCD
+def display_historical_message(lcd, message):
+    lines = message.split('\n')
+    if len(lines) == 2:
+        line1, line2 = lines
+        for _ in range(25):  # Display for 25 seconds
+            now = datetime.now()
+            time_str = now.strftime("%I:%M:%S %p")
+
+            print(line1.center(16))
+            print(line2.center(16))
+            print(time_str.center(16))
+
+            lcd.lcd_clear()
+            lcd.lcd_display_string(line1.center(16), 1)
+            lcd.lcd_display_string(line2.center(16), 2)
+
+            log_to_file(f"{line1} | {line2}", time_str)
+
+            sleep(1)
+    else:
+        print(f"Invalid historical message format: {message}")
+
 # Function to log displayed information to a file
 def log_to_file(line1, line2):
     try:
@@ -359,8 +384,11 @@ def main():
                 message = random.choice(positive_messages + wellness_messages)
                 display_message(lcd, message)
         else:
-            message = random.choice(positive_messages + wellness_messages)
-            display_message(lcd, message)
+            message = random.choice(positive_messages + wellness_messages + historical_messages)
+            if message in historical_messages:
+                display_historical_message(lcd, message)
+            else:
+                display_message(lcd, message)
 
         weather_str = get_weather()
         display_weather(lcd, weather_str)
