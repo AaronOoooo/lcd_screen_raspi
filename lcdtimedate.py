@@ -50,6 +50,20 @@ positive_messages = load_messages(POSITIVE_MESSAGES_FILE)
 wellness_messages = load_messages(WELLNESS_MESSAGES_FILE)
 historical_messages = load_messages(HISTORICAL_MESSAGES_FILE)
 
+###################### DEBUGGING ######################
+###################### DEBUGGING ######################
+###################### DEBUGGING ######################
+
+# Debug: Print loaded messages
+print(f"Loaded positive messages: {positive_messages}")
+print(f"Loaded wellness messages: {wellness_messages}")
+print(f"Loaded historical messages: {historical_messages}")
+
+###################### DEBUGGING ######################
+###################### DEBUGGING ######################
+###################### DEBUGGING ######################
+
+
 # Function to load stock symbols from a file
 def load_stock_symbols(filename):
     try:
@@ -257,9 +271,7 @@ def display_historical_message(lcd, message):
             now = datetime.now()
             time_str = now.strftime("%I:%M:%S %p")
 
-            print(line1.center(16))
-            print(line2.center(16))
-            print(time_str.center(16))
+            print(f"Displaying historical message: {line1} | {line2}")  # Debug: Print message being displayed
 
             lcd.lcd_clear()
             lcd.lcd_display_string(line1.center(16), 1)
@@ -385,6 +397,7 @@ def main():
                 display_message(lcd, message)
         else:
             message = random.choice(positive_messages + wellness_messages + historical_messages)
+            print(f"Selected message: {message}")  # Debug: Print selected message
             if message in historical_messages:
                 display_historical_message(lcd, message)
             else:
@@ -393,6 +406,7 @@ def main():
         weather_str = get_weather()
         display_weather(lcd, weather_str)
         delete_log_file()
+
 
 # Entry point of the program
 if __name__ == "__main__":
