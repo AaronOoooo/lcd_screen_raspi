@@ -32,6 +32,7 @@ WELLNESS_MESSAGES_FILE = 'wellness_messages.txt'
 HISTORICAL_MESSAGES_FILE = 'historical_messages.txt'
 STOCK_SYMBOLS_FILE = 'stock_symbols.txt'
 LOG_FILE = 'log_lcd_screen.txt'
+HTML_LOG_FILE = 'log_lcd_screen.html'
 LAST_DELETION_FILE = 'last_deletion.txt'
 STOCK_CACHE_FILE = 'stock_cache.json'
 
@@ -49,20 +50,6 @@ def load_messages(filename):
 positive_messages = load_messages(POSITIVE_MESSAGES_FILE)
 wellness_messages = load_messages(WELLNESS_MESSAGES_FILE)
 historical_messages = load_messages(HISTORICAL_MESSAGES_FILE)
-
-###################### DEBUGGING ######################
-###################### DEBUGGING ######################
-###################### DEBUGGING ######################
-
-# Debug: Print loaded messages
-print(f"Loaded positive messages: {positive_messages}")
-print(f"Loaded wellness messages: {wellness_messages}")
-print(f"Loaded historical messages: {historical_messages}")
-
-###################### DEBUGGING ######################
-###################### DEBUGGING ######################
-###################### DEBUGGING ######################
-
 
 # Function to load stock symbols from a file
 def load_stock_symbols(filename):
@@ -286,10 +273,35 @@ def display_historical_message(lcd, message):
 # Function to log displayed information to a file
 def log_to_file(line1, line2):
     try:
+        # Log to text file
         with open(LOG_FILE, 'a') as log_file:
             log_file.write(f"{datetime.now()}: {line1} | {line2}\n")
+        
+        # Log to HTML file
+        with open(HTML_LOG_FILE, 'a') as html_file:
+            html_file.write(f"<p><strong>{datetime.now()}</strong>: {line1} | {line2}</p>\n")
+        
+        # Ensure the HTML file is properly formatted
+        ensure_html_format()
+        
     except Exception as e:
         print(f"Error logging to file: {e}")
+
+# Function to ensure the HTML file has a proper structure
+def ensure_html_format():
+    if not os.path.exists(HTML_LOG_FILE):
+        with open(HTML_LOG_FILE, 'w') as html_file:
+            html_file.write("<html><head><title>LCD Log</title></head><body>\n")
+    else:
+        with open(HTML_LOG_FILE, 'r') as html_file:
+            content = html_file.read()
+        if not content.startswith("<html>"):
+            with open(HTML_LOG_FILE, 'w') as html_file:
+                html_file.write("<html><head><title>LCD Log</title></head><body>\n")
+                html_file.write(content)
+        if not content.endswith("</body></html>"):
+            with open(HTML_LOG_FILE, 'a') as html_file:
+                html_file.write("</body></html>\n")
 
 # Function to check if current time is within Alpha Vantage API call hours
 def is_within_alpha_vantage_hours():
@@ -320,6 +332,9 @@ def delete_log_file():
             if os.path.exists(LOG_FILE):
                 os.remove(LOG_FILE)
                 print("Log file deleted.")
+            if os.path.exists(HTML_LOG_FILE):
+                os.remove(HTML_LOG_FILE)
+                print("HTML log file deleted.")
 
             with open(LAST_DELETION_FILE, 'w') as file:
                 file.write(now.isoformat())
