@@ -1,4 +1,4 @@
-# Signally LCD
+# Signally LCD / Aaron O Hall
 import sys
 import os
 import requests
@@ -278,30 +278,45 @@ def log_to_file(line1, line2):
             log_file.write(f"{datetime.now()}: {line1} | {line2}\n")
         
         # Log to HTML file
-        with open(HTML_LOG_FILE, 'a') as html_file:
-            html_file.write(f"<p><strong>{datetime.now()}</strong>: {line1} | {line2}</p>\n")
-        
-        # Ensure the HTML file is properly formatted
         ensure_html_format()
+        
+        log_entry = f"<div class='log-entry'><strong>{datetime.now()}</strong>: {line1} | {line2}</div>\n"
+        
+        with open(HTML_LOG_FILE, 'r') as html_file:
+            content = html_file.read()
+        
+        new_content = content.replace("</div></body></html>", log_entry + "</div></body></html>")
+        
+        with open(HTML_LOG_FILE, 'w') as html_file:
+            html_file.write(new_content)
         
     except Exception as e:
         print(f"Error logging to file: {e}")
 
 # Function to ensure the HTML file has a proper structure
 def ensure_html_format():
+    now = datetime.now()
+    created_date = now.strftime("%B %d, %Y | %I:%M %p")
+    
     if not os.path.exists(HTML_LOG_FILE):
         with open(HTML_LOG_FILE, 'w') as html_file:
-            html_file.write("<html><head><title>LCD Log</title></head><body>\n")
+            with open('style_log_template.html', 'r') as template_file:
+                template = template_file.read()
+            html_content = template.replace("{created_date}", created_date).replace("{log_entries}", "")
+            html_file.write(html_content)
     else:
         with open(HTML_LOG_FILE, 'r') as html_file:
             content = html_file.read()
-        if not content.startswith("<html>"):
+        if not content.startswith("<!DOCTYPE html>"):
             with open(HTML_LOG_FILE, 'w') as html_file:
-                html_file.write("<html><head><title>LCD Log</title></head><body>\n")
-                html_file.write(content)
-        if not content.endswith("</body></html>"):
+                with open('style_log_template.html', 'r') as template_file:
+                    template = template_file.read()
+                html_content = template.replace("{created_date}", created_date).replace("{log_entries}", "")
+                html_file.write(html_content)
+        if not content.endswith("</div></body></html>"):
             with open(HTML_LOG_FILE, 'a') as html_file:
-                html_file.write("</body></html>\n")
+                html_file.write("</div></body></html>\n")
+
 
 # Function to check if current time is within Alpha Vantage API call hours
 def is_within_alpha_vantage_hours():

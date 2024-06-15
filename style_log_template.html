@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Signally LCD: Log</title>
+    <style>
+        body {
+            background-color: rgb(8, 8, 78);
+            color: rgb(170, 162, 162);
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            margin: 20px;
+        }
+        .heading {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .timestamp {
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        .log-entry {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="heading">Signally LCD: Log</div>
+        <div class="timestamp">File created on {created_date}</div>
+        <div class="log-entries">
+            {log_entries}
+        </div>
+    </div>
+</body>
+</html>
